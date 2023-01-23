@@ -3,9 +3,12 @@ package com.metacoding.chapter06
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import com.metacoding.chapter06.databinding.ActivityMainBinding
 import com.metacoding.chapter06.databinding.DialogCountdownSettingBinding
 import java.util.Timer
@@ -63,8 +66,8 @@ class MainActivity : AppCompatActivity() {
     //초기화시켜주는 함수
     private fun initViews() {
         currentDeciSecond = 0
-        binding.timeTextView.text= "00:00"
-        binding.tickTextView.text= "0"
+        binding.timeTextView.text = "00:00"
+        binding.tickTextView.text = "0"
         binding.countdownTextView.text = String.format("%02d", countdownSecond)
         var progress = (currentCountdownDeciSecond / (countdownSecond * 10f)) * 100
         binding.countdownProgressBar.progress = progress.toInt()
@@ -130,10 +133,36 @@ class MainActivity : AppCompatActivity() {
         binding.countdownGroup.isVisible = true
         initViews()
 
+        //lap 기록 지워주기
+        binding.labContainerLinearLayout.removeAllViews()
     }
 
     private fun lap() {
+        //start 전이면 그냥 종료
+        if (currentDeciSecond == 0) return
 
+        //linearLayout 받아오기
+        val container = binding.labContainerLinearLayout
+
+        //코드에서 textView 작성하기
+        val lapTextView = TextView(this).apply {
+            textSize = 20f  //textSize는 float으로 넣어야 한다.
+            gravity = Gravity.CENTER
+
+            val minutes = currentDeciSecond / 10 / 60
+            val seconds = currentDeciSecond / 10 % 60
+            val deciSeconds = currentDeciSecond % 10
+
+            text = container.childCount.inc().toString() + String.format(
+                ". %02d:%02d %01d",
+                minutes,
+                seconds,
+                deciSeconds
+            )
+            setPadding(30)
+
+        }
+        container.addView(lapTextView, 0)
     }
 
     private fun showAlertDialog() {
