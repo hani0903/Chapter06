@@ -3,6 +3,7 @@ package com.metacoding.chapter06
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.metacoding.chapter06.databinding.ActivityMainBinding
@@ -17,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     //DeciSecond : 0.1초 단위의 숫자
     private var currentDeciSecond = 0
-    private var currentSecond = 0
+    private var currentCountdownDeciSecond = countdownSecond * 10
 
     //timer
     private var timer: Timer? = null
@@ -55,25 +56,59 @@ class MainActivity : AppCompatActivity() {
             lap()
         }
 
+        initViews()
 
     }
 
+    //초기화시켜주는 함수
+    private fun initViews() {
+        currentDeciSecond = 0
+        binding.timeTextView.text= "00:00"
+        binding.tickTextView.text= "0"
+        binding.countdownTextView.text = String.format("%02d", countdownSecond)
+        var progress = (currentCountdownDeciSecond / (countdownSecond * 10f)) * 100
+        binding.countdownProgressBar.progress = progress.toInt()
+    }
+
+
     private fun start() {
 
-        //타이머를 만드는 것도 thread를 만드는 것과 동일하다.
         timer = timer(initialDelay = 0, period = 100) {
-            //데이터 업데이트
-            currentDeciSecond += 1
-            Log.d("currentDeciSecond", currentDeciSecond.toString())
-            val minutes = currentDeciSecond.div(10) / 60
-            val seconds = currentDeciSecond.div(10) % 60
-            val deciSeconds = currentDeciSecond % 10
 
-            //UI 업데이트
-            runOnUiThread {
-                binding.timeTextView.text =
-                    String.format("%02d:%02d", minutes, seconds)
-                binding.tickTextView.text = deciSeconds.toString()
+
+            /**카운트 다운*/
+            if (currentCountdownDeciSecond == 0) {
+
+                //타이머를 만드는 것도 thread를 만드는 것과 동일하다.
+                //데이터 업데이트
+                currentDeciSecond += 1
+                Log.d("currentDeciSecond", currentDeciSecond.toString())
+                val minutes = currentDeciSecond.div(10) / 60
+                val seconds = currentDeciSecond.div(10) % 60
+                val deciSeconds = currentDeciSecond % 10
+
+                //UI 업데이트
+                runOnUiThread {
+                    binding.countdownGroup.isVisible = false
+
+                    binding.timeTextView.text =
+                        String.format("%02d:%02d", minutes, seconds)
+                    binding.tickTextView.text = deciSeconds.toString()
+                }
+
+            } else {
+                //시간 데이터 업데이트
+                currentCountdownDeciSecond--
+                val seconds = currentCountdownDeciSecond.div(10)
+
+                //progress bar 업데이트 0 ~ 100까지의 값으로 나타낸다
+                var progress = (currentCountdownDeciSecond / (countdownSecond * 10f)) * 100
+                binding.countdownProgressBar.progress = progress.toInt()
+
+                binding.root.post {
+                    binding.countdownTextView.text =
+                        String.format("%02d", seconds)
+                }
             }
         }
     }
@@ -92,9 +127,9 @@ class MainActivity : AppCompatActivity() {
         binding.lapButton.isVisible = false
 
         //시간 초기화
-        currentDeciSecond = 0
-        binding.timeTextView.text = "00:00"
-        binding.tickTextView.text ="0"
+        binding.countdownGroup.isVisible = true
+        initViews()
+
     }
 
     private fun lap() {
@@ -127,6 +162,7 @@ class MainActivity : AppCompatActivity() {
             setPositiveButton("확인") { _, _ ->
                 //데이터 업데이트
                 countdownSecond = dialogBinding.countdownSecondPicker.value
+                currentCountdownDeciSecond = countdownSecond * 10
 
                 //UI 업데이트 ** 잊지말기! **
                 binding.countdownTextView.text = String.format("%02d", countdownSecond)
