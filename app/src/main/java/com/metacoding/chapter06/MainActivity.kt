@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun pause() {
         timer?.cancel()
+        //timer 없애기
         timer = null
     }
 
@@ -89,6 +90,11 @@ class MainActivity : AppCompatActivity() {
         binding.stopButton.isVisible = true
         binding.pauseButton.isVisible = false
         binding.lapButton.isVisible = false
+
+        //시간 초기화
+        currentDeciSecond = 0
+        binding.timeTextView.text = "00:00"
+        binding.tickTextView.text ="0"
     }
 
     private fun lap() {
