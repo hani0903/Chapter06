@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.metacoding.chapter06.databinding.ActivityMainBinding
 import com.metacoding.chapter06.databinding.DialogCountdownSettingBinding
+import java.util.Timer
 import kotlin.concurrent.timer
 
 class MainActivity : AppCompatActivity() {
@@ -17,6 +18,9 @@ class MainActivity : AppCompatActivity() {
     //DeciSecond : 0.1초 단위의 숫자
     private var currentDeciSecond = 0
     private var currentSecond = 0
+
+    //timer
+    private var timer: Timer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     private fun start() {
 
         //타이머를 만드는 것도 thread를 만드는 것과 동일하다.
-        timer(initialDelay = 0, period = 100) {
+        timer = timer(initialDelay = 0, period = 100) {
             //데이터 업데이트
             currentDeciSecond += 1
             Log.d("currentDeciSecond", currentDeciSecond.toString())
@@ -75,7 +79,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pause() {
-
+        timer?.cancel()
+        timer = null
     }
 
     private fun stop() {
