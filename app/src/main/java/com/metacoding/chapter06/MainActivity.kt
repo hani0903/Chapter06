@@ -2,15 +2,21 @@ package com.metacoding.chapter06
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.metacoding.chapter06.databinding.ActivityMainBinding
 import com.metacoding.chapter06.databinding.DialogCountdownSettingBinding
+import kotlin.concurrent.timer
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var countdownSecond = 10
+
+    //DeciSecond : 0.1초 단위의 숫자
+    private var currentDeciSecond = 0
+    private var currentSecond = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,11 +28,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.startButton.setOnClickListener {
-            start()
             binding.startButton.isVisible = false
             binding.stopButton.isVisible = false
             binding.pauseButton.isVisible = true
             binding.lapButton.isVisible = true
+            start()
         }
 
         binding.stopButton.setOnClickListener {
@@ -50,6 +56,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun start() {
 
+        //타이머를 만드는 것도 thread를 만드는 것과 동일하다.
+        timer(initialDelay = 0, period = 100) {
+            //데이터 업데이트
+            currentDeciSecond += 1
+            Log.d("currentDeciSecond", currentDeciSecond.toString())
+            val minutes = currentDeciSecond.div(10) / 60
+            val seconds = currentDeciSecond.div(10) % 60
+            val deciSeconds = currentDeciSecond % 10
+
+            //UI 업데이트
+            runOnUiThread {
+                binding.timeTextView.text =
+                    String.format("%02d:%02d", minutes, seconds)
+                binding.tickTextView.text = deciSeconds.toString()
+            }
+        }
     }
 
     private fun pause() {
@@ -83,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
             val dialogBinding = DialogCountdownSettingBinding.inflate(layoutInflater)
             //numberPicker의 값 설정하기
-            with(dialogBinding.countdownSecondPicker){
+            with(dialogBinding.countdownSecondPicker) {
                 maxValue = 60
                 minValue = 0
                 value = countdownSecond
@@ -96,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                 countdownSecond = dialogBinding.countdownSecondPicker.value
 
                 //UI 업데이트 ** 잊지말기! **
-                binding.countdownTextView.text = String.format("%02d",countdownSecond)
+                binding.countdownTextView.text = String.format("%02d", countdownSecond)
 
             }
             setNegativeButton("취소", null)
